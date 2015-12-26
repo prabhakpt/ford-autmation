@@ -8,19 +8,12 @@ import static com.ford.logs.automation.utilities.BrowserEvents.findElement;
 import static com.ford.logs.automation.utilities.BrowserEvents.getSizeuptoPreviousLog;
 import static com.ford.logs.automation.utilities.BrowserEvents.getValueOfXPath;
 import static com.ford.logs.automation.utilities.BrowserEvents.isTextPresent;
+import static com.ford.logs.automation.utilities.BrowserEvents.doPaste;
 import static com.ford.logs.automation.utilities.BrowserEvents.openUrl;
 import static com.ford.logs.automation.utilities.BrowserEvents.selectByVisibleText;
-import static com.ford.logs.automation.utilities.XPathConstants.URL;
-import static com.ford.logs.automation.utilities.XPathConstants.browseURL;
-import static com.ford.logs.automation.utilities.XPathConstants.continueButton;
-import static com.ford.logs.automation.utilities.XPathConstants.hteamText;
-import static com.ford.logs.automation.utilities.XPathConstants.hteamURL;
-import static com.ford.logs.automation.utilities.XPathConstants.manageActiveLogs;
-import static com.ford.logs.automation.utilities.XPathConstants.prod;
-import static com.ford.logs.automation.utilities.XPathConstants.selectButton;
-import static com.ford.logs.automation.utilities.XPathConstants.selectProject;
-import static com.ford.logs.automation.utilities.XPathConstants.tableRows;
-import static com.ford.logs.automation.utilities.XPathConstants.wasTools;
+import static com.ford.logs.automation.utilities.XPathConstants.*;
+
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -37,10 +30,21 @@ public class FordLogsAutomation {
 	}
 	
 	@Test
-	public void autoDownloadLogs() throws InterruptedException{
+	public void autoDownloadLogs() throws InterruptedException, IOException{
 		openUrl(URL);
-		System.out.println("Please enter username and rsa token and click on login button");
-		Thread.sleep(20000);
+		System.out.println("Entering username and rsa token and click on login button");
+		enterText(userId[0], userId[1], userId[2]);
+		Thread.sleep(3000);
+		
+		System.out.println("Running autoit script to copy rsa token");
+		Runtime.getRuntime().exec(autoitScriptPath);
+		
+		doPaste(password[0], password[1],"v");
+		Thread.sleep(8000);
+		
+		clickByLocator(submitBtn[0], submitBtn[1]);
+		
+		Thread.sleep(8000);
 		enterText(hteamURL[0], hteamURL[1], hteamURL[2]);
 		Thread.sleep(3000);
 		clickByLocator(browseURL[0], browseURL[1]);
@@ -97,6 +101,7 @@ public class FordLogsAutomation {
 		}
 		Thread.sleep(5000);
 		logName = FileUtilities.getLastDownloadedLogName();
+		
 		// taking backup of last log file name downloaded in text file
 		if(null != nextLog){
 			clickByLocator("name", "multiRetrievalBtn");

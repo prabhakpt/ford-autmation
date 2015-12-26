@@ -597,6 +597,18 @@ public class BrowserEvents {
 		
 	}
 	
+	public static void doPaste(String identifyBy,String locator,String paste){
+		//waitForElementPresent(10000, identifyBy, locator);
+		System.out.println("doing paste..");
+		getWebElement(identifyBy,locator).sendKeys(Keys.chord(Keys.CONTROL,paste));
+		
+	}
+	
+	public static void getRsaTokenPassword(){
+		String rsaTokenPath = System.getProperty("user.dir")+"//resources//rsa-token//rsatoken.exe";
+		
+	}
+	
 	public static void main(String[] args) {
 		System.out.println("pra"+dataTime("MMddhhmmss"));
 	}

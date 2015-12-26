@@ -3,6 +3,12 @@ package com.ford.logs.automation.utilities;
 public class XPathConstants {
 	
 	public static String URL = "https://webvpn213.ford.com/+CSCOE+/logon.html";
+	public static String userId[] = {"id","username","spenmet1"};
+	public static String password[] = {"id","password_input"};
+	public static String submitBtn[] = {"name","Login"};
+	
+	public static String autoitScriptPath = System.getProperty("user.dir")+"//resources//rsa-token//rsatoken.exe";
+	
 	public static String hteamURL[] = {"id","unicorn_form_url","www.hteam.ford.com"};
 	public static String browseURL[] = {"id","browse_text"};
 	
