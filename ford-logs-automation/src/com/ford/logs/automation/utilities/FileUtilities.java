@@ -11,9 +11,9 @@ import java.io.Writer;
 
 public class FileUtilities {
 	
-		public static String getLastDownloadedLogName(){
+		public static String getLastDownloadedLogName(String fileName){
 		String currentFilePath = System.getProperty("user.dir");
-		String filename = currentFilePath+"/resources/fordlog.txt";
+		String filename = currentFilePath+"/resources/"+fileName+".txt";
 		FileInputStream file = null;
 
 		try{
@@ -38,10 +38,10 @@ public class FileUtilities {
 		return null;
 	}
 		
-		public static void writeLastLogNameDownloaded(String logName){
+		public static void writeLastLogNameDownloaded(String fileName,String logName){
 			System.out.println("log Name is"+logName);
 			String currentFilePath = System.getProperty("user.dir");
-			String filename = currentFilePath+"/resources/fordlog.txt";
+			String filename = currentFilePath+"/resources/"+fileName+".txt";
 			FileOutputStream file = null;
 			Writer write = null;
 			try {
@@ -61,6 +61,6 @@ public class FileUtilities {
 		}
 		
 		public static void main(String[] args) {
-			writeLastLogNameDownloaded("hello.......");
+			//writeLastLogNameDownloaded("hello.......");
 		}
 }

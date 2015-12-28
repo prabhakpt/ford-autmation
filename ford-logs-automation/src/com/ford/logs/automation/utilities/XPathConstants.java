@@ -24,11 +24,15 @@ public class XPathConstants {
 	public static String continueButton[] = {"name","activeLogBtn"};
 	public static String retrieveLogButton[] = {"name","retrieveLogBtn"};
 	
-	public static String downloadZipLog[] = {"xpath","//table[@id='row']/tbody/tr[1]/td[4]/input[@title='Download File']"};
-
+	public static String downloadZipLog[] = {"xpath","//table[@id='row']/tbody/tr[","]/td[4]/input[@title='Download File']"};
+	
+	public static String retrieveLogTab[] = {"xpath","//table[@id='row']/tbody/tr"};
+	
 	//after loading logs
 	public static String tableRows[] = {"xpath","//table[@id='row']/tbody/tr"};
 	//public static String tdData[] = {"xpath","//table[@id='row']/tbody/tr"};
+	
+	public static String zipColumnName[] = {"xpath","//table[@class='thinBorder']/tbody/tr[6]/td[2]"};
 	
 	public static class BlackScreenCreds{
 		public static String bodyText = "WEB SINGLE LOGIN";

@@ -1,7 +1,7 @@
 package com.ford.logs.automation.utilities;
 
 import static com.ford.logs.automation.utilities.FileUtilities.getLastDownloadedLogName;
-import static com.ford.logs.automation.utilities.XPathConstants.tableRows;
+import static com.ford.logs.automation.utilities.XPathConstants.downloadZipLog;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -403,7 +403,7 @@ public class BrowserEvents {
 	
 	public static void enterText(String identifyBy, String locator,
 			String text) {
-		waitForElementPresent(1000,identifyBy, locator);
+		waitForElementPresent(10000,identifyBy, locator);
 		try {
 			getWebElement(identifyBy, locator).sendKeys(text);
 		} catch (Throwable e) {
@@ -415,7 +415,7 @@ public class BrowserEvents {
 	
 	public static boolean isElementDispalyed(String identifyBy, String locator){
 		boolean isDisplayed = false;
-		waitForElementPresent(1000, identifyBy, locator);
+		waitForElementPresent(10000, identifyBy, locator);
 		WebElement element = getWebElement(identifyBy,locator);
 		if(element != null){
 			isDisplayed = element.isDisplayed();
@@ -498,8 +498,10 @@ public class BrowserEvents {
 	public static void clickByLocator(String identifyBy, String locator){
 		WebElement element = findElement(identifyBy,locator);
 		try {
-				if(element != null)
-				element.click();
+				if(element != null){
+					Thread.sleep(3000);
+					element.click();
+				}
 				Thread.sleep(3000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -566,46 +568,62 @@ public class BrowserEvents {
 	 * @return
 	 */
 	public static String getValueOfXPath(String identifyBy,String locator){
-		
+		waitForElementPresent(11000, identifyBy, locator);
 		return driver.findElement(By.xpath(locator)).getText();
 	}
 	
 	// get size of previous log
-	public static int getSizeuptoPreviousLog(){
+	public static int getSizeuptoPreviousLog(String tableXtype,String locator,String fileName){
 		
 		//reading the last log name from text file.
-		String lastLogName = getLastDownloadedLogName();
+		String lastLogName = getLastDownloadedLogName(fileName);
 		
-		int sizeOfRows = getCountOfXPath(tableRows[0],tableRows[1]);
+		int sizeOfRows = getCountOfXPath(tableXtype,locator);
 		
 		// loop through all trs and tds
 		for(int i=1;i<=sizeOfRows;i++){
 			System.out.println("Getting "+i+"Row value");
 				System.out.print("Getting "+i+" Row "+3+" column value====");
-				String currentLogName = getValueOfXPath("xpath", tableRows[1]+"["+i+"]/td["+3+"]");
+				String currentLogName = getValueOfXPath(tableXtype, locator+"["+i+"]/td["+3+"]");
 				System.out.println(" "+currentLogName);
 				if(lastLogName.equals(currentLogName)){
 					System.out.println("name matches to the previous log- returning with size=="+i);
 					return i;
 				}
 		}
-		return 0;
+		return sizeOfRows;
 	}
 	
-	public static void selectListOfLogsStartsFromGivenLogName(){
+	// get size of previous log
+	public static void downloadZipLogFile(String tableXtype,String locator,String fileName){
 		
+		//reading the last log name from text file.
+		String downloadLogName = getLastDownloadedLogName(fileName);
 		
+		int sizeOfRows = getCountOfXPath(tableXtype,locator);
+		
+		System.out.println("Size of rows:"+sizeOfRows);
+		boolean zipNameMatched = false;
+		// loop through all trs and tds
+		for(int i=1;i<=sizeOfRows;i++){
+			System.out.println("Getting "+i+"Row value");
+				System.out.print("Getting "+i+" Row "+3+" column value====");
+				String currentLogName = getValueOfXPath(tableXtype, locator+"["+i+"]/td["+1+"]");
+				System.out.println(" "+currentLogName);
+				if(downloadLogName.equals(currentLogName)){
+					zipNameMatched = true;
+					System.out.println("name matches to the previous log- returning with size=="+i);
+					clickByLocator(downloadZipLog[0], downloadZipLog[1]+i+downloadZipLog[2]);
+				}
+		}
+		
+		if(zipNameMatched == false)
+		System.out.println("Zip name did not matched...");
 	}
 	
 	public static void doPaste(String identifyBy,String locator,String paste){
-		//waitForElementPresent(10000, identifyBy, locator);
 		System.out.println("doing paste..");
 		getWebElement(identifyBy,locator).sendKeys(Keys.chord(Keys.CONTROL,paste));
-		
-	}
-	
-	public static void getRsaTokenPassword(){
-		String rsaTokenPath = System.getProperty("user.dir")+"//resources//rsa-token//rsatoken.exe";
 		
 	}
 	
