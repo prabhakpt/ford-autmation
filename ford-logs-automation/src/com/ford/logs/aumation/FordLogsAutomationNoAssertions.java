@@ -13,7 +13,10 @@ import static com.ford.logs.automation.utilities.BrowserEvents.isTextPresent;
 import static com.ford.logs.automation.utilities.BrowserEvents.openUrl;
 import static com.ford.logs.automation.utilities.BrowserEvents.selectByVisibleText;
 import static com.ford.logs.automation.utilities.BrowserEvents.waitForSeconds;
+import static com.ford.logs.automation.utilities.ReadExcelData.getFordLogInfo;
+import static com.ford.logs.automation.utilities.ReadExcelData.updateFordInfo;
 import static com.ford.logs.automation.utilities.XPathConstants.URL;
+import static com.ford.logs.automation.utilities.XPathConstants.autoitDownloadLogScriptPath;
 import static com.ford.logs.automation.utilities.XPathConstants.autoitScriptPath;
 import static com.ford.logs.automation.utilities.XPathConstants.browseURL;
 import static com.ford.logs.automation.utilities.XPathConstants.confirmPwd;
@@ -22,6 +25,7 @@ import static com.ford.logs.automation.utilities.XPathConstants.continueButton;
 import static com.ford.logs.automation.utilities.XPathConstants.hteamText;
 import static com.ford.logs.automation.utilities.XPathConstants.hteamURL;
 import static com.ford.logs.automation.utilities.XPathConstants.manageActiveLogs;
+import static com.ford.logs.automation.utilities.XPathConstants.multiRetrievalBtn;
 import static com.ford.logs.automation.utilities.XPathConstants.password;
 import static com.ford.logs.automation.utilities.XPathConstants.prod;
 import static com.ford.logs.automation.utilities.XPathConstants.retrieveLogButton;
@@ -32,50 +36,43 @@ import static com.ford.logs.automation.utilities.XPathConstants.tableRows;
 import static com.ford.logs.automation.utilities.XPathConstants.userId;
 import static com.ford.logs.automation.utilities.XPathConstants.wasTools;
 import static com.ford.logs.automation.utilities.XPathConstants.zipColumnName;
-import static com.ford.logs.automation.utilities.XPathConstants.autoitDownloadLogScriptPath;
-import static com.ford.logs.automation.utilities.XPathConstants.multiRetrievalBtn;
-import static com.ford.logs.automation.utilities.ReadExcelData.*;
 
 import java.io.IOException;
+import java.util.TimerTask;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.JUnitCore;
 
 import com.ford.logs.automation.utilities.FileUtilities;
 import com.ford.logs.automation.utilities.XPathConstants;
 import com.ford.logs.automation.utilities.XPathConstants.BlackScreenCreds;
 
-public class FordLogsAutomation {
+public class FordLogsAutomationNoAssertions extends TimerTask{
 	
-	final static Logger log= Logger.getLogger(FordLogsAutomation.class);
+	final static Logger log= Logger.getLogger(FordLogsAutomationNoAssertions.class);
 	
-	@Before
 	public void loadDriver(){
 		loggerConfiguration();
 		createDriver("firefox");
 	}
 	
-	@Test
 	public void autoDownloadLogs() throws InterruptedException, IOException{
+		loadDriver();
 		openUrl(URL);
 		log.info("Entering username and rsa token and click on login button");
 		
 		doLogin();
 		if(isTextPresent("Login failed.")){
 			log.info("please hold on for 50 seconds will retry to login again.");
-			Thread.sleep(50000);
+			Thread.sleep(30000);
 			doLogin();
 		}
 		log.info("verfying is other token for confirmatin page loaded");
 		if(isTextPresent("More information is required to log in.")){
 			log.info("Enter other token for confirmation");
 			log.info("please hold on for 50 seconds will retry to login again.");
-			Thread.sleep(50000);
+			Thread.sleep(40000);
 			log.info("Running autoit script to copy rsa token");
 			Runtime.getRuntime().exec(autoitScriptPath);
 			Thread.sleep(2000);
@@ -166,10 +163,10 @@ public class FordLogsAutomation {
 			FileUtilities.writeLastLogNameDownloaded(XPathConstants.fordLogZip, zipLogFileName);
 		}else if(logNameInFile.equals(nextLog)){
 			log.info("No new files to download");
-		}	
+		}
+		closeFordDriver();
 	}
 	
-	@After
 	public void closeFordDriver(){
 		closeDriver();
 	}
@@ -208,9 +205,18 @@ public class FordLogsAutomation {
 		String log4jPorperties = "E:\\automation\\testing\\ford-logs-automation\\classes\\log4j.properties";
 		PropertyConfigurator.configure(log4jPorperties);
 	}
+
+	@Override
+	public void run() {
+		try {
+			autoDownloadLogs();
+		} catch (InterruptedException | IOException e) {
+			e.printStackTrace();
+		}		
+	}
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		
 		JUnitCore.main("com.ford.logs.aumation.FordLogsAutomation");
-	}
+	}*/
 }

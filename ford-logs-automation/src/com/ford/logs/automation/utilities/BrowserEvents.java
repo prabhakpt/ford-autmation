@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -22,36 +23,38 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
+import static com.ford.logs.automation.utilities.ReadExcelData.*;
 
 public class BrowserEvents {
 
 	private static WebDriver driver;
-
-	public static WebDriver createDriver(String driverName) {
-		if (driverName.equals("firefox")) {
-			driver = new FirefoxDriver();
-			driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-			System.out.println("FireFox Driver Started..");
-			return driver;
-		} else if (driverName.equals("chrome")) {
-			System.setProperty("webdriver.chrome.driver",
-					System.getProperty("user.dir")
-							+ "\\src\\config\\chromedriver.exe");
-			driver = new ChromeDriver();
-			return driver;
-		} else if (driverName.equals("ie")) {
-			System.setProperty("webdriver.ie.driver",
-					System.getProperty("user.dir")
-							+ "\\src\\config\\IEDriverServer.exe");
-			driver = new InternetExplorerDriver();
-			return driver;
+	
+	final static Logger log= Logger.getLogger(BrowserEvents.class);
+	
+	public static void createDriver(String driverName) {
+		switch (driverName) {
+			case "firefox":
+				driver = new FirefoxDriver();
+				driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+				break;
+			case "chrome":
+				System.setProperty("webdriver.chrome.driver",
+						System.getProperty("user.dir")
+								+ "\\src\\config\\chromedriver.exe");
+				driver = new ChromeDriver();
+				break;
+			case "ie":
+				System.setProperty(
+						"webdriver.ie.driver",
+						System.getProperty("user.dir").concat(
+								"\\src\\config\\IEDriverServer.exe"));
+				driver = new InternetExplorerDriver();
+				break;
 		}
-		return null;
-
 	}
 
 	public static void closeDriver() {
-		System.out.println("Closing Driver");
+		log.info("Closing Driver");
 		driver.quit();
 	}
 
@@ -79,7 +82,7 @@ public class BrowserEvents {
 		String userId = "prabha";
 		String date = new SimpleDateFormat("yyyyMMddHHmmssSSS")
 				.format(new Date());
-		System.out.println("user name is:" + (userId + date));
+		log.info("user name is:" + (userId + date));
 		return (userId + date) + "@gmail.com";
 	}
 
@@ -106,7 +109,7 @@ public class BrowserEvents {
 			long totalWaitTime = 0;
 			boolean isPresent = isElementPresent(identifyBy, locator);
 			while (!isPresent) {
-				System.out.println("Element not present..");
+				log.info("Element not present..");
 				long time = 1000;
 				totalWaitTime = totalWaitTime + time;
 				Thread.sleep(1000);
@@ -155,11 +158,11 @@ public class BrowserEvents {
 				}
 			}
 		} catch (Exception ex) {
-			System.out.println("Exception occured..");
+			log.info("Exception occured..");
 			// ex.printStackTrace();
 
 		}
-		System.out.println("Returning false...");
+		log.info("Returning false...");
 		return false;
 
 	}
@@ -279,7 +282,7 @@ public class BrowserEvents {
 		int i = 1;
 		while (!isTextPresent(string)) {
 			long time = 1000;
-			System.out.println(i + "Second");
+			log.info(i + "Second");
 			totalWaitTime = totalWaitTime + time;
 			Thread.sleep(1000);
 			i++;
@@ -298,7 +301,7 @@ public class BrowserEvents {
 		}
 		boolean isTextExist = driver.findElement(By.tagName("body")).getText()
 				.contains(text);
-		System.out.println("isText present:" + isTextExist);
+		log.info("isText present:" + isTextExist);
 		return isTextExist;
 	}
 
@@ -331,7 +334,7 @@ public class BrowserEvents {
 		try{
 			if (identifyBy.equalsIgnoreCase("xpath")) {
 				webElement = driver.findElement(By.xpath(locator));
-				System.out.println("Executed"+ identifyBy +"without exception");
+				log.info("Executed"+ identifyBy +"without exception");
 			} else if (identifyBy.equalsIgnoreCase("id")) {
 				webElement = driver.findElement(By.id(locator));
 			} else if (identifyBy.equalsIgnoreCase("name")) {
@@ -340,7 +343,7 @@ public class BrowserEvents {
 				webElement = driver.findElement(By.linkText(locator));
 			}
 		}catch(Exception ex){
-			System.out.println("Exception occured..");
+			log.info("Exception occured..");
 		}
 		if(webElement != null){
 			Actions builder = new Actions(driver);
@@ -375,7 +378,7 @@ public class BrowserEvents {
 				return driver.findElement(By.partialLinkText(locator));
 			}
 		}catch(Exception ex){
-			System.out.println("Exception occured..");
+			log.info("Exception occured..");
 		}
 		
 		return null;
@@ -393,11 +396,11 @@ public class BrowserEvents {
 			}else if(identifyBy.equalsIgnoreCase("link")){
 				driver.findElement(By.linkText(locator)).sendKeys(Keys.ENTER);
 			}else{
-				System.out.println("Nothing identfyBy is matched with existing conditions please add condition for:"+identifyBy);
+				log.info("Nothing identfyBy is matched with existing conditions please add condition for:"+identifyBy);
 			}
 			
 		}catch(Exception ex){
-			System.out.println("Exception occured..");
+			log.info("Exception occured..");
 		}
 	}
 	
@@ -408,7 +411,7 @@ public class BrowserEvents {
 			getWebElement(identifyBy, locator).sendKeys(text);
 		} catch (Throwable e) {
 			takeScreenShotOnfailure("Textbox not found");// "+datetime("MMddhhmmss")
-			System.out.println(e.getMessage());
+			log.info(e.getMessage());
 			Assert.assertTrue(e.getMessage(), false);
 		}
 	}
@@ -419,7 +422,7 @@ public class BrowserEvents {
 		WebElement element = getWebElement(identifyBy,locator);
 		if(element != null){
 			isDisplayed = element.isDisplayed();
-			System.out.println("is element displayed :"+isDisplayed);
+			log.info("is element displayed :"+isDisplayed);
 		}
 		return isDisplayed;
 	}
@@ -432,23 +435,23 @@ public class BrowserEvents {
 			e.printStackTrace();
 		}
 		WebElement element = findElement(identifyBy, locator);
-		System.out.println("Ready to run contol function..");
+		log.info("Ready to run contol function..");
 		element.sendKeys(Keys.chord(Keys.CONTROL, selectTag));
-		System.out.println("Done with control key function");
+		log.info("Done with control key function");
 	}
 
 	public static void controlMouseClick(String identifyBy,String locator){
-		System.out.println("finding the element for control enter");
+		log.info("finding the element for control enter");
 		WebElement element = findElement(identifyBy, locator);
-		System.out.println("got the element starting contl enter");
+		log.info("got the element starting contl enter");
 		String keysPressed =  Keys.chord(Keys.CONTROL, Keys.RETURN);
 		   element.sendKeys(keysPressed) ;
-		   System.out.println("successfully entered..");
+		   log.info("successfully entered..");
 	}
 	
 	public static void alertText(){
 		
-		System.out.println("Text in alert:"+driver.switchTo().alert().getText());
+		log.info("Text in alert:"+driver.switchTo().alert().getText());
 		try {
 			Thread.sleep(3000);
 		} catch (InterruptedException e) {
@@ -458,7 +461,7 @@ public class BrowserEvents {
 	}
 	
 	public static void alertAccept(){
-			System.out.println("accepting the alert");
+			log.info("accepting the alert");
 			driver.switchTo().alert().accept();
 			try {
 				Thread.sleep(3000);
@@ -468,7 +471,7 @@ public class BrowserEvents {
 	}
 	
 	public static void alertReject(){
-			System.out.println("reject the alert");
+			log.info("reject the alert");
 			driver.switchTo().alert().dismiss();
 			try {
 				Thread.sleep(3000);
@@ -481,13 +484,13 @@ public class BrowserEvents {
 		WebElement element = findElement(identifyBy, locator);
 		Thread.sleep(3000);
 		//input[@value='male']
-		System.out.println("is radio Button selected:"+element.isSelected());
+		log.info("is radio Button selected:"+element.isSelected());
 	}
 	
 	public static void selectRadioButton(String identifyBy,String locator) throws InterruptedException{
 		WebElement element = findElement(identifyBy, locator);
 		Thread.sleep(3000);
-		System.out.println("is radio Button selected:"+element.isSelected());
+		log.info("is radio Button selected:"+element.isSelected());
 		if(!element.isSelected()){
 			element.click();
 			
@@ -499,10 +502,10 @@ public class BrowserEvents {
 		WebElement element = findElement(identifyBy,locator);
 		try {
 				if(element != null){
-					Thread.sleep(3000);
+					Thread.sleep(1000);
 					element.click();
 				}
-				Thread.sleep(3000);
+				Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -555,7 +558,7 @@ public class BrowserEvents {
 	public static int getCountOfXPath(String identifyBy,String locator){
 		waitForElementPresent(10000,identifyBy,locator);
 		if(identifyBy.equals("xpath")){
-			System.out.println("counting the list of rows present  in table");
+			log.info("counting the list of rows present  in table");
 			return driver.findElements(By.xpath(locator)).size();
 		}
 		// no such locator is found / xpath
@@ -576,18 +579,18 @@ public class BrowserEvents {
 	public static int getSizeuptoPreviousLog(String tableXtype,String locator,String fileName){
 		
 		//reading the last log name from text file.
-		String lastLogName = getLastDownloadedLogName(fileName);
+		String lastLogName = getFordLogInfo(XPathConstants.logFile);
 		
 		int sizeOfRows = getCountOfXPath(tableXtype,locator);
 		
 		// loop through all trs and tds
 		for(int i=1;i<=sizeOfRows;i++){
-			System.out.println("Getting "+i+"Row value");
+			log.info("Getting "+i+"Row value");
 				System.out.print("Getting "+i+" Row "+3+" column value====");
 				String currentLogName = getValueOfXPath(tableXtype, locator+"["+i+"]/td["+3+"]");
-				System.out.println(" "+currentLogName);
+				log.info(" "+currentLogName);
 				if(lastLogName.equals(currentLogName)){
-					System.out.println("name matches to the previous log- returning with size=="+i);
+					log.info("name matches to the previous log- returning with size=="+i);
 					return i;
 				}
 		}
@@ -595,39 +598,56 @@ public class BrowserEvents {
 	}
 	
 	// get size of previous log
-	public static void downloadZipLogFile(String tableXtype,String locator,String fileName){
+	public static boolean downloadZipLogFile(String tableXtype,String locator,String fileName){
 		
 		//reading the last log name from text file.
-		String downloadLogName = getLastDownloadedLogName(fileName);
+		//String downloadLogName = getLastDownloadedLogName(fileName);
+		String downloadLogName = getFordLogInfo(XPathConstants.fordLogZip);
+		boolean isfilesPresent = false;
+		if(isTextPresent("No files to select from")){
+			isfilesPresent = false;
+		}else{
 		
-		int sizeOfRows = getCountOfXPath(tableXtype,locator);
-		
-		System.out.println("Size of rows:"+sizeOfRows);
-		boolean zipNameMatched = false;
-		// loop through all trs and tds
-		for(int i=1;i<=sizeOfRows;i++){
-			System.out.println("Getting "+i+"Row value");
-				System.out.print("Getting "+i+" Row "+3+" column value====");
-				String currentLogName = getValueOfXPath(tableXtype, locator+"["+i+"]/td["+1+"]");
-				System.out.println(" "+currentLogName);
-				if(downloadLogName.equals(currentLogName)){
-					zipNameMatched = true;
-					System.out.println("name matches to the previous log- returning with size=="+i);
-					clickByLocator(downloadZipLog[0], downloadZipLog[1]+i+downloadZipLog[2]);
-				}
-		}
-		
-		if(zipNameMatched == false)
-		System.out.println("Zip name did not matched...");
+			int sizeOfRows = getCountOfXPath(tableXtype,locator);
+			
+			log.info("Size of rows:"+sizeOfRows);
+			boolean zipNameMatched = false;
+			
+			// loop through all trs and tds
+			for(int i=1;i<=sizeOfRows;i++){
+				log.info("Getting "+i+"Row value");
+					String currentLogName = getValueOfXPath(tableXtype, locator+"["+i+"]/td["+1+"]");
+					log.info(" "+currentLogName);
+					if(downloadLogName.equals(currentLogName)){
+						zipNameMatched = true;
+						log.info("name matches to the previous log- returning with size=="+i);
+						clickByLocator(downloadZipLog[0], downloadZipLog[1]+i+downloadZipLog[2]);
+					}
+			}
+			
+			if(zipNameMatched == false)
+			log.info("Zip name is not available to download...");
+			isfilesPresent = true;
+	}
+		return isfilesPresent;
 	}
 	
 	public static void doPaste(String identifyBy,String locator,String paste){
-		System.out.println("doing paste..");
+		log.info("doing paste..");
 		getWebElement(identifyBy,locator).sendKeys(Keys.chord(Keys.CONTROL,paste));
 		
 	}
 	
+	public static void waitForSeconds(int seconds){
+		try {
+			Thread.sleep(seconds*1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) {
-		System.out.println("pra"+dataTime("MMddhhmmss"));
+		//log.info("pra"+dataTime("MMddhhmmss"));
+		log.info(3*1000);
 	}
 }
