@@ -1,8 +1,0 @@
-Run("C:\Program Files (x86)\RSA SecurID Software Token\SecurID.exe")
-   WinWaitActive("Shiva-rsa - RSA SecurID Token")
-   Send("1234")
-   Sleep( 3000 )
-   Send("{ENTER}")
-   Sleep( 5000 )
-   Send("{CTRLDOWN}c{CTRLUP}")
-   WinClose("Shiva-rsa - RSA SecurID Token")
