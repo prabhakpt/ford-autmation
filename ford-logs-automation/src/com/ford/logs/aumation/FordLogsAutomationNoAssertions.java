@@ -13,7 +13,7 @@ import static com.ford.logs.automation.utilities.BrowserEvents.getValueOfXPath;
 import static com.ford.logs.automation.utilities.BrowserEvents.isTextPresent;
 import static com.ford.logs.automation.utilities.BrowserEvents.openUrl;
 import static com.ford.logs.automation.utilities.BrowserEvents.selectByVisibleText;
-import static com.ford.logs.automation.utilities.BrowserEvents.waitForSeconds;
+import static com.ford.logs.automation.utilities.BrowserEvents.waitForTextPresentInElement;
 import static com.ford.logs.automation.utilities.XPathConstants.URL;
 import static com.ford.logs.automation.utilities.XPathConstants.autoitDownloadLogScriptPath;
 import static com.ford.logs.automation.utilities.XPathConstants.autoitScriptPath;
@@ -52,13 +52,13 @@ import org.apache.log4j.PropertyConfigurator;
 import com.ford.logs.automation.utilities.ReadExcelData;
 import com.ford.logs.automation.utilities.XPathConstants.BlackScreenCreds;
 
-public class FordLogsAutomationNoAssertions
-extends TimerTask {
+public class FordLogsAutomationNoAssertions extends TimerTask {
     static final Logger log = Logger.getLogger(FordLogsAutomationNoAssertions.class);
+    String browser = "chrome";
 
     public void loadDriver() {
         this.loggerConfiguration();
-        createDriver("chrome");
+        createDriver(browser);
     }
 
     public void autoDownloadLogs() throws InterruptedException, IOException {
@@ -70,12 +70,13 @@ extends TimerTask {
         log.info("Entering username and rsa token and click on login button");
         
         doLogin();
-        
-        this.tryLoggingIn();
-        this.verifyingForMoreInfo();
-        this.tryLoggingIn();
-        this.verifyingForMoreInfo();
-        Thread.sleep(2000);
+        /*if(isTextPresent(moreInfoToLogin) || isTextPresent(loginFailed)){
+	        this.tryLoggingIn();
+	        this.verifyingForMoreInfo();
+	        this.tryLoggingIn();
+	        this.verifyingForMoreInfo();
+	        Thread.sleep(2000);
+        }*/
         
         enterText(hteamURL[0], hteamURL[1], hteamURL[2]);
         Thread.sleep(3000);
@@ -116,8 +117,12 @@ extends TimerTask {
         }
         clickByLocator(retrieveLogButton[0], retrieveLogButton[1]);
         if (downloadLogZIPFile()) {
-            clickByLocator(prod[0], prod[1]);
+        	
+        	// If browser is chrome. Do not run the autoit script.
+        	if(!(browser.equals("chrome")))
             FordLogsAutomationNoAssertions.downloadRetrivalLogZipFile();
+        	
+            clickByLocator(prod[0], prod[1]);
             Thread.sleep(5000);
         } else {
             clickByLocator(prod[0], prod[1]);
@@ -173,12 +178,25 @@ extends TimerTask {
             Runtime.getRuntime().exec(autoitScriptPath);
             Thread.sleep(3000);
             doPaste(password[0], password[1], paste);
-            waitForSeconds(2);
-            log.info(("Pasted pascode value is: " + getValue(password[0], password[1])));
-            clickByLocator(submitBtn[0], submitBtn[1]);
+
+            // write code to wait for the password present.
+            if(waitForTextPresentInElement(10000,password[0],password[1])){
+            	log.info(("Pasted pascode value is: " + getValue(password[0], password[1])));
+            	clickByLocator(submitBtn[0], submitBtn[1]);
+            }else{
+            	log.info("Passcode is not yet pasted in password filed.");
+            }
         }
         catch (IOException | InterruptedException e) {
             e.printStackTrace();
+        }
+        
+        if(isTextPresent(loginFailed)){
+        	tryLoggingIn();
+        }else if(isTextPresent(moreInfoToLogin)){
+        	verifyingForMoreInfo();
+        }else{
+        	return;
         }
     }
 
@@ -204,29 +222,40 @@ extends TimerTask {
         PropertyConfigurator.configure(log4jPorperties);
     }
 
-    public void tryLoggingIn() {
+    public static void tryLoggingIn() {
         int loginAttempts = 1;
         try {
-            while (isTextPresent(loginFailed)) {
-                log.info("please hold on for 50 seconds will retry to login again.");
-                Thread.sleep(50000);
-                if (++loginAttempts == 3) {
-                    log.info("Attempting 3rd time with same user. Exiting from script.");
-                    log.info("Please check user name entered in excel sheet and token value in rsatoken.au3 are correct then re-run the script once again");
-                    System.exit(1);
-                }
-                FordLogsAutomationNoAssertions.doLogin();
-            }
+        	if((isTextPresent(loginFailed))){
+	            do {
+	                log.info("please hold on for 50 seconds will retry to login again.");
+	                Thread.sleep(50000);
+	                if (++loginAttempts >= 3) {
+	                    log.info("Attempting 3rd time with same user.");
+	                    log.info("please hold on for half an hour will retry to login again.");
+	                    Thread.sleep(1800000);
+	                    //System.exit(1);
+	                }
+	                FordLogsAutomationNoAssertions.doLogin();
+	                Thread.sleep(1000);
+	            }while (isTextPresent(loginFailed));
+        	}
         }
         catch (InterruptedException ex) {
             log.info(("Exception wile attempting to login: Caused BY: " + ex.getMessage()));
         }
+        
+        // More information is required
+        if(isTextPresent(moreInfoToLogin)){
+        	verifyingForMoreInfo();
+        }else{
+        	return;
+        }
     }
 
-    public void verifyingForMoreInfo() {
+    public static void verifyingForMoreInfo() {
         log.info("verfying is other token for confirmatin page loaded");
         try {
-            if (isTextPresent(moreInfoToLogin)) {
+            //if (isTextPresent(moreInfoToLogin)) {
                 log.info("Enter other token for confirmation");
                 log.info("please hold on for 40 seconds will retry to login again.");
                 Thread.sleep(40000);
@@ -234,13 +263,23 @@ extends TimerTask {
                 Runtime.getRuntime().exec(autoitScriptPath);
                 Thread.sleep(4000);
                 doPaste(confirmPwd[0], confirmPwd[1], paste);
-                Thread.sleep(2000);
-                log.info(("Pasted pascode value is: " + getValue(confirmPwd[0], confirmPwd[1])));
-                clickByLocator(continueBtn[0], continueBtn[1]);
-            }
+                if(waitForTextPresentInElement(10000,confirmPwd[0],confirmPwd[1])){
+	                log.info(("Pasted pascode value is: " + getValue(confirmPwd[0], confirmPwd[1])));
+	                clickByLocator(continueBtn[0], continueBtn[1]);
+                }else{
+                	log.info("Passcode is not yet pasted in password filed.");
+                }
+           // }
         }
         catch (IOException | InterruptedException ex) {
             log.info(("Exception occured while logging for verifyig more Info: " + ex.getMessage()));
+        }
+        
+        // login failed..
+        if(isTextPresent(loginFailed)){
+        	tryLoggingIn();
+        }else{
+        	return;
         }
     }
 

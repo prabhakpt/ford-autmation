@@ -8,7 +8,7 @@ public class FordLogsScheduler {
 		System.out.println("Starting ford logs downlod autmation");
 		FordLogsAutomationNoAssertions ford = new FordLogsAutomationNoAssertions();
 		Timer timer = new Timer();
-		long interval = 1000*60*180;
+		long interval = 1000*60*60;
 		timer.schedule(ford, 0,interval);
 	}
 }	

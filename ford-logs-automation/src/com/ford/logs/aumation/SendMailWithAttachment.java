@@ -22,7 +22,7 @@ public class SendMailWithAttachment {
 public static void main(String[] args) {
 	
 	  String to="prabhakar@neevtech.com";//change accordingly  
-	  String cc = "prabha25k@gmail.com";
+	  String cc = "prabha25k@gmail.com,shiva@neevtech.com";
 	  try { 
 		InternetAddress ccAddress[] = InternetAddress.parse(cc);
 	  
@@ -30,8 +30,7 @@ public static void main(String[] args) {
 	  Properties props = new Properties();  
 	  props.put("mail.smtp.host", "smtp.gmail.com");  
 	  props.put("mail.smtp.socketFactory.port", "465");  
-	  props.put("mail.smtp.socketFactory.class",  
-	            "javax.net.ssl.SSLSocketFactory");  
+	  props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");  
 	  props.put("mail.smtp.auth", "true");  
 	  props.put("mail.smtp.ssl", "true"); 
 	  props.put("mail.smtp.port", "465");  
@@ -53,12 +52,12 @@ public static void main(String[] args) {
 	   
 	   BodyPart messageBodyPart = new MimeBodyPart();
 	   
-	   messageBodyPart.setText("Hi Krishna, \n\nThis is Body.. \n\nThank you,\nPrabhakar K.");
+	   messageBodyPart.setText("Hi Ke, \n\nScript Login attempts reached to three. Try to stop and re run the script. \n\nThank you,\nPrabhakar K.");
 	   Multipart multiPart = new MimeMultipart();
 	   multiPart.addBodyPart(messageBodyPart);
 	   messageBodyPart= new MimeBodyPart();
 	   
-	   String filePath = System.getProperty("user.dir")+"\\ford-log-details.xls";
+	   String filePath = System.getProperty("user.dir")+"\\resources\\ford-log-details.xls";
 	   System.out.println("File path is : "+filePath);
 	   DataSource dataSource = new FileDataSource(filePath);
 	   messageBodyPart.setDataHandler(new DataHandler(dataSource));

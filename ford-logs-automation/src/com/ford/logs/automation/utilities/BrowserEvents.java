@@ -94,15 +94,22 @@ public class BrowserEvents {
         }
     }
 
-    public static boolean isElementPresentStatus(int maxWaitTime, String identifyBy, String locator) throws InterruptedException {
+    public static boolean isElementPresentStatus(int maxWaitTime, String identifyBy, String locator) {
         long totalWaitTime = 0;
-        boolean isPresent = BrowserEvents.isElementPresent(identifyBy, locator);
-        while (!isPresent) {
-            log.info("Element not present..");
-            long time = 1000;
-            Thread.sleep(1000);
-            isPresent = BrowserEvents.isElementPresent(identifyBy, locator);
-            if ((totalWaitTime += time) >= (long)maxWaitTime) break;
+        boolean isPresent = false;
+        try{
+        	isPresent = BrowserEvents.isElementPresent(identifyBy, locator);
+	        
+	        while (!isPresent) {
+	            log.info("Element not present..");
+	            long time = 1000;
+	            Thread.sleep(1000);
+	            isPresent = BrowserEvents.isElementPresent(identifyBy, locator);
+	            if ((totalWaitTime += time) >= maxWaitTime) 
+	            	break;
+	        }
+        }catch(InterruptedException ex){
+        	log.info(ex.getLocalizedMessage());
         }
         return isPresent;
     }
@@ -131,6 +138,42 @@ public class BrowserEvents {
         return false;
     }
 
+    
+    public static boolean waitForTextPresentInElement(int maxWaitTime,String identifyBy, String locator){
+    	
+    	WebElement element = null;
+    	boolean isPresent = false;
+    	long totalWaitTime = 0;
+    	
+    	if(isElementPresentStatus(maxWaitTime, identifyBy, locator)){
+    		element = getWebElement(identifyBy, locator);
+    	}
+    	
+    	if(null != element){
+	    	try{
+		    	do{
+		    			if(null != element.getText()){
+		    				isPresent = true;
+		    				break;
+		    			}else{
+			    			long time = 1000;
+			 	            Thread.sleep(1000);
+			 	            if ((totalWaitTime += time) >= maxWaitTime){
+			 	            	isPresent = false;
+			 	            	break;
+			 	            }
+		    			}
+		    			log.info("is text present in given : "+isPresent);
+		    		}while(true);
+	    	}catch(InterruptedException ex){
+	    		ex.printStackTrace();
+	    	}
+    	}else{
+    		log.info("Element object is null");
+    	}
+    	return isPresent;
+    }
+    
     public static String getTooltip(String identityBy, String locator) {
         String title = null;
         if (BrowserEvents.getWebElement(identityBy, locator) != null) {
@@ -314,6 +357,7 @@ public class BrowserEvents {
     }
 
     public static void pressEnter(String identifyBy, String locator) {
+    	log.info("Press enter method executed..");
         try {
             if (identifyBy.equalsIgnoreCase("xpath")) {
                 driver.findElement(By.xpath((String)locator)).sendKeys(Keys.ENTER);
@@ -431,7 +475,6 @@ public class BrowserEvents {
                 Thread.sleep(1000);
                 element.click();
             }
-            Thread.sleep(1000);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
@@ -526,6 +569,7 @@ public class BrowserEvents {
                     zipNameMatched = true;
                     log.info(("name matches to the previous log- returning with size==" + i));
                     BrowserEvents.clickByLocator(XPathConstants.downloadZipLog[0], String.valueOf(XPathConstants.downloadZipLog[1]) + i + XPathConstants.downloadZipLog[2]);
+                    break;
                 }
                 ++i;
             }
@@ -546,15 +590,6 @@ public class BrowserEvents {
             e.printStackTrace();
         }
         BrowserEvents.getWebElement(identifyBy, locator).sendKeys(Keys.chord(Keys.CONTROL, paste));
-    }
-
-    public static void waitForSeconds(int seconds) {
-        try {
-            Thread.sleep(seconds * 1000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void main(String[] args) {
