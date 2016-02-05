@@ -591,7 +591,11 @@ public class BrowserEvents {
         }
         BrowserEvents.getWebElement(identifyBy, locator).sendKeys(Keys.chord(Keys.CONTROL, paste));
     }
-
+    
+    // 
+    public static void startFromWebVPNMethod(){
+    	
+    }
     public static void main(String[] args) {
         System.out.println(BrowserEvents.dataTime("yyyy-MM-dd HH:mm:ss"));
     }

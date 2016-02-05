@@ -22,7 +22,7 @@ import static com.ford.logs.automation.utilities.XPathConstants.confirmPwd;
 import static com.ford.logs.automation.utilities.XPathConstants.continueBtn;
 import static com.ford.logs.automation.utilities.XPathConstants.continueButton;
 import static com.ford.logs.automation.utilities.XPathConstants.fordLogZip;
-import static com.ford.logs.automation.utilities.XPathConstants.hteamText;
+import static com.ford.logs.automation.utilities.XPathConstants.prodText;
 import static com.ford.logs.automation.utilities.XPathConstants.hteamURL;
 import static com.ford.logs.automation.utilities.XPathConstants.logFile;
 import static com.ford.logs.automation.utilities.XPathConstants.loginFailed;
@@ -41,6 +41,9 @@ import static com.ford.logs.automation.utilities.XPathConstants.userId;
 import static com.ford.logs.automation.utilities.XPathConstants.userName;
 import static com.ford.logs.automation.utilities.XPathConstants.wasTools;
 import static com.ford.logs.automation.utilities.XPathConstants.zipColumnName;
+import static com.ford.logs.automation.utilities.XPathConstants.outofMemoryError;
+import static com.ford.logs.automation.utilities.XPathConstants.webvpnURL;
+import static com.ford.logs.automation.utilities.XPathConstants.autoitScriptNextTokenPath;
 
 import java.io.IOException;
 import java.util.TimerTask;
@@ -69,15 +72,8 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
         
         log.info("Entering username and rsa token and click on login button");
         
-        doLogin();
-        /*if(isTextPresent(moreInfoToLogin) || isTextPresent(loginFailed)){
-	        this.tryLoggingIn();
-	        this.verifyingForMoreInfo();
-	        this.tryLoggingIn();
-	        this.verifyingForMoreInfo();
-	        Thread.sleep(2000);
-        }*/
-        
+        doLogin(1);
+
         enterText(hteamURL[0], hteamURL[1], hteamURL[2]);
         Thread.sleep(3000);
         clickByLocator(browseURL[0], browseURL[1]);
@@ -93,7 +89,10 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
             enterText(BlackScreenCreds.pwd[0], BlackScreenCreds.pwd[1], black_Screen_Password);
             clickByLocator(BlackScreenCreds.concourButton[0], BlackScreenCreds.concourButton[1]);
         }
-        if (isTextPresent(hteamText)) {
+        if(isTextPresent(outofMemoryError)){
+        	startFromWebVPNMethod();
+        }
+        if (isTextPresent(prodText)) {
             log.info("directly hitting prod link");
             clickByLocator(prod[0], prod[1]);
             Thread.sleep(4000);
@@ -132,10 +131,12 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
         Thread.sleep(6000);
         log.info("loading ford logs.");
         int lastLogSize = getSizeuptoPreviousLog(tableRows[0], tableRows[1]);
+        
         String nextLog = null;
         String logName = null;
         String logNameInFile = null;
         int i = lastLogSize - 1;
+        
         while (i >= 1) {
             log.info(("Getting " + i + "Row value"));
             System.out.print("Getting " + i + " Row  column value====");
@@ -166,16 +167,17 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
     public void closeFordDriver() {
         closeDriver();
     }
-
-    public static void doLogin() {
-        try {
+    //public static int attempts = 0;
+    public static void doLogin(int attempt) {
+    try {
+    		log.info("Attempts logging in to WEBVPN : "+attempt);
             String userNameVal = ReadExcelData.getFordLogDetails(userName);
             
             System.out.println("User Name from excel sheet is:" + userNameVal);
             enterText(userId[0], userId[1], userNameVal);
             log.info("Running autoit script to copy rsa token");
             log.info(("path : " + autoitScriptPath));
-            Runtime.getRuntime().exec(autoitScriptPath);
+            AutoItScript.runAutoitScript(autoitScriptPath);
             Thread.sleep(3000);
             doPaste(password[0], password[1], paste);
 
@@ -186,26 +188,32 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
             }else{
             	log.info("Passcode is not yet pasted in password filed.");
             }
-        }
-        catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        if(isTextPresent(loginFailed)){
-        	tryLoggingIn();
-        }else if(isTextPresent(moreInfoToLogin)){
-        	verifyingForMoreInfo();
-        }else{
-        	return;
-        }
-    }
-
+    	
+	        if(isTextPresent(loginFailed) && attempt <=2){
+	        	log.info("please hold on for 50 seconds will retry to login again.");
+	        	Thread.sleep(50000);
+	        	doLogin(++attempt);
+	        }if(isTextPresent(loginFailed) && attempt >=3){
+	        	log.info("please hold on for half an hour, will retry to login again.");
+	        	Thread.sleep(1800000);
+	        	doLogin(++attempt);
+	        }else if(isTextPresent(moreInfoToLogin)){
+	        	log.info("verfying is other token for confirmatin page loaded");
+	        	verifyingForMoreInfo();
+	        }else{
+	        	return;
+	        }
+	    }catch (InterruptedException e) {
+	        e.printStackTrace();
+	    }
+   }
+    
     public static void downloadRetrivalLogZipFile() {
         try {
-            Runtime.getRuntime().exec(autoitDownloadLogScriptPath);
+           AutoItScript.runAutoitScript(autoitDownloadLogScriptPath);
             Thread.sleep(4000);
         }
-        catch (IOException | InterruptedException e) {
+        catch (InterruptedException e) {
             log.error(e.getLocalizedMessage());
         }
     }
@@ -222,7 +230,7 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
         PropertyConfigurator.configure(log4jPorperties);
     }
 
-    public static void tryLoggingIn() {
+/*    public static void tryLoggingIn() {
         int loginAttempts = 1;
         try {
         	if((isTextPresent(loginFailed))){
@@ -246,22 +254,21 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
         
         // More information is required
         if(isTextPresent(moreInfoToLogin)){
+        	 log.info("verfying is other token for confirmatin page loaded");
         	verifyingForMoreInfo();
         }else{
         	return;
         }
-    }
+    }*/
 
     public static void verifyingForMoreInfo() {
-        log.info("verfying is other token for confirmatin page loaded");
         try {
-            //if (isTextPresent(moreInfoToLogin)) {
                 log.info("Enter other token for confirmation");
-                log.info("please hold on for 40 seconds will retry to login again.");
-                Thread.sleep(40000);
+                log.info("please hold on for 50Sec seconds will retry to login again.");
+                //Thread.sleep(1000*50);
                 log.info("Running autoit script to copy rsa token");
-                Runtime.getRuntime().exec(autoitScriptPath);
-                Thread.sleep(4000);
+                AutoItScript.runAutoitScript(autoitScriptNextTokenPath);
+                Thread.sleep(9000);
                 doPaste(confirmPwd[0], confirmPwd[1], paste);
                 if(waitForTextPresentInElement(10000,confirmPwd[0],confirmPwd[1])){
 	                log.info(("Pasted pascode value is: " + getValue(confirmPwd[0], confirmPwd[1])));
@@ -269,18 +276,37 @@ public class FordLogsAutomationNoAssertions extends TimerTask {
                 }else{
                 	log.info("Passcode is not yet pasted in password filed.");
                 }
-           // }
         }
-        catch (IOException | InterruptedException ex) {
+        catch (InterruptedException ex) {
             log.info(("Exception occured while logging for verifyig more Info: " + ex.getMessage()));
         }
         
         // login failed..
         if(isTextPresent(loginFailed)){
-        	tryLoggingIn();
+        	doLogin(1);
+        }else if(isTextPresent("Logon")){
+        	doLogin(1);
         }else{
         	return;
         }
+    }
+    
+    public static void startFromWebVPNMethod(){
+    	
+    	try {
+    		
+    		// Wait for 50 Seconds
+			Thread.sleep(50000);
+	    	openUrl(webvpnURL);
+	    	Thread.sleep(5000);
+			enterText(hteamURL[0], hteamURL[1], hteamURL[2]);
+		    Thread.sleep(3000);
+		    clickByLocator(browseURL[0], browseURL[1]);
+		    
+    	} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	
     }
 
     @Override

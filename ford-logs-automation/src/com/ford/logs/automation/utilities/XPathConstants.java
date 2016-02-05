@@ -5,12 +5,14 @@ package com.ford.logs.automation.utilities;
 
 public class XPathConstants {
     public static String URL = "https://webvpn213.ford.com/+CSCOE+/logon.html";
+    public static String webvpnURL = "https://webvpn213.ford.com";
     public static String[] userId = new String[]{"id", "username", "user_name"};// update column name here and in excel sheet according to you.
     public static String[] password = new String[]{"id", "password_input"};
     public static String[] submitBtn = new String[]{"name", "Login"};
     public static String moreInfoToLogin = "More information is required to log in.";
     public static String loginFailed = "Login failed.";
     public static String autoitScriptPath = String.valueOf(System.getProperty("user.dir")) + "\\resources\\rsatoken.exe";
+    public static String autoitScriptNextTokenPath = String.valueOf(System.getProperty("user.dir")) + "\\resources\\RSANextToken.exe";
     public static String autoitDownloadLogScriptPath = String.valueOf(System.getProperty("user.dir")) + "\\resources\\download.exe";
     public static String[] confirmPwd = new String[]{"id", "password"};
     public static String[] continueBtn = new String[]{"name", "Continue"};
@@ -21,7 +23,8 @@ public class XPathConstants {
     public static String logFile = "log_name";// update column name here and in excel sheet according to you.
     public static String userName = "user_name";// update column name here and in excel sheet according to you.
     
-    public static String hteamText = "PROD";
+    public static String outofMemoryError = "Error 500: javax.servlet.ServletException: java.lang.OutOfMemoryError: Java heap space";
+    public static String prodText = "PROD";
     public static String managerActiveLogsText = "Manage Active Logs";
     public static String[] wasTools = new String[]{"link", "WASTools"};
     public static String[] selectProject = new String[]{"name", "projectName", "www.ownerservicesa.ford.com"};
