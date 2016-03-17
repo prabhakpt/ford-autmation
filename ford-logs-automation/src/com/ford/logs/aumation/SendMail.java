@@ -29,7 +29,7 @@ public static void main(String[] args) {
 	  Session session = Session.getDefaultInstance(props,  
 	   new javax.mail.Authenticator() {  
 	   protected PasswordAuthentication getPasswordAuthentication() {  
-		   return new PasswordAuthentication("prabha.kpr25@gmail.com","Pra4@sho");//change accordingly  
+		   return new PasswordAuthentication("prabha.kpr25@gmail.com","Password");//change accordingly  
 	   }  
 	  });  
 	   
